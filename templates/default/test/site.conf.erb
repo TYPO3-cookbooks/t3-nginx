@@ -1,0 +1,83 @@
+upstream main {
+        server 127.0.0.1:8001;
+        server 127.0.0.1:8002;
+        server 127.0.0.1:8003;
+}
+
+server {
+  listen    443 ssl http2;
+
+  server_name   .typo3.org;
+  server_name   .typo3.com;
+  server_name   .typo3.de;
+
+  proxy_set_header  Host      $host;
+  proxy_set_header  X-Real-IP   $remote_addr;
+  proxy_set_header  X-Forwarded-For   $proxy_add_x_forwarded_for;
+  proxy_set_header  X-Forwarded-Port  $server_port;
+
+  # Explicitely unset HTTPS, it will be set correctly by Apache depending on X-Forwarded-Port (security!)
+  proxy_set_header  HTTPS     "";
+
+  # access_log    /var/log/nginx/typo3.org/access.log combined;
+  access_log    off;
+  error_log   /var/log/nginx/typo3.org/error.log;
+
+  location / {
+    proxy_pass  http://backend_srv107;
+  }
+
+  location /api/typo3cms {
+    proxy_pass http://api.typo3.org/typo3cms/current/html;
+    proxy_set_header Host api.typo3.org;
+  }
+
+  location /api/typo3 {
+    rewrite ^/api/typo3(.*) http://$host/api/typo3cms$1 permanent;
+  }
+
+  location /api/flow {
+    proxy_pass http://api.typo3.org/flow/current;
+    proxy_set_header Host api.typo3.org;
+  }
+
+  location /api/flow3 {
+    rewrite ^/api/flow3(.*) http://$host/api/flow$1 permanent;
+  }
+
+  location /maintenance.html {
+    rewrite .* http://typo3.org/ permanent;
+    # root    /var/www/vhosts/typo3org/www/;
+  }
+
+  location /nginx_status {
+    stub_status on;
+    access_log off;
+    allow 127.0.0.1;
+    deny all;
+  }
+
+  location ~ /.svn/ {
+    deny all;
+  }
+
+  error_page    500 /errorpages/500.html;
+  error_page    502 /errorpages/500.html;
+  error_page    503 /errorpages/500.html;
+  error_page    504 /errorpages/500.html;
+  # if the backend sends on of the errors with configured error_page, we will send
+  # our error page, not the server's output
+  proxy_intercept_errors  on;
+
+  location /errorpages/ {
+    root /var/www/vhosts/typo3org/www;
+    allow all;
+  }
+}
+
+server {
+  listen    80;
+  location / {
+    return 301 https://$host$request_uri;
+  }
+}

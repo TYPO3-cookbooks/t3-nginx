@@ -1,0 +1,35 @@
+upstream <%= @name %>_upstream {
+<% @upstream.each do |backend_server| %>
+  server <%= backend_server %>;
+<% end -%>
+}
+
+server {
+  listen            443 ssl http2;
+  listen            [::]:443 ssl http2;
+
+  <% @server_name.each do |name| %>
+  server_name       <%= name %>;
+  <% end -%>
+
+  proxy_set_header  Host              $host;
+  proxy_set_header  X-Real-IP         $remote_addr;
+  proxy_set_header  X-Forwarded-For   $proxy_add_x_forwarded_for;
+  proxy_set_header  X-Forwarded-Port  $server_port;
+
+  access_log        <%= node['nginx']['log_dir'] %>/<%= @name %>/access.log;
+  error_log         <%= node['nginx']['log_dir'] %>/<%= @name %>/error.log;
+
+  location / {
+    proxy_pass      http://<%= @name %>_upstream;
+  }
+}
+
+server {
+  listen    80;
+  listen    [::]:80;
+  ssl       off;
+  location / {
+    return 301 https://$host$request_uri;
+  }
+}

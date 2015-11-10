@@ -1,0 +1,15 @@
+server {
+  listen            80 http2;
+  listen            [::]:80 http2;
+
+  <% @server_name.each do |name| %>
+  server_name       <%= name %>;
+  <% end -%>
+
+  access_log        <%= node['nginx']['log_dir'] %>/<%= @name %>/access.log;
+  error_log         <%= node['nginx']['log_dir'] %>/<%= @name %>/error.log;
+
+  location / {
+    try_files       $uri $uri/ index.html
+  }
+}
