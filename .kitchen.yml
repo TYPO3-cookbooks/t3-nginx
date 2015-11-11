@@ -2,7 +2,7 @@
 driver:
   name: vagrant
   network:
-  - ["private_network", {ip: "192.168.88.18"}]
+    - ["private_network", {ip: "192.168.88.18"}]
 
 provisioner:
   name: chef_zero
@@ -15,16 +15,16 @@ provisioner:
 platforms:
 - name: debian-7.8
   run_list:
-  - recipe[apt::default]
+    - recipe[apt::default]
 - name: debian-8.2
   run_list:
-  - recipe[apt::default]
+    - recipe[apt::default]
 
 suites:
   - name: default
     run_list:
-    - recipe[t3-nginx::default]
-    - recipe[t3-nginx::test_default]
+      - recipe[t3-nginx::default]
+      - recipe[t3-nginx::test_default]
   - name: proxy
     run_list:
       - recipe[t3-nginx::default]

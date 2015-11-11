@@ -4,7 +4,7 @@ describe 't3-nginx::_config' do
 
   before do
      stub_command('which nginx').and_return(0)
-   end
+  end
 
   context 'When all attributes are default, on an unspecified platform' do
     let(:chef_run) do

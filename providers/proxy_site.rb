@@ -10,7 +10,7 @@ action :create do
   nginx_site name do
     template "proxy-site.conf.erb"
     variables(
-      :name        => name, 
+      :name        => name,
       :server_name => server_name,
       :upstream    => upstream,
     )
@@ -22,23 +22,21 @@ action :create do
   end
 
   new_resource.updated_by_last_action true
-
 end
 
 action :delete do
-  
+
   nginx_site new_resource.name do
     enable false
   end
 
   new_resource.updated_by_last_action true
-
 end
 
 def load_current_resource
   @current_resource = Chef::Resource::T3NginxProxySite.new(@new_resource.name)
   @current_resource.name(@new_resource.name)
-  # alle attribute laden, um vergleichen zu können...
-  # @current_resource.username(@new_resource.name)
+  # Load all attributes for being able to compare
+  #@current_resource.username(@new_resource.name)
   current_resource
 end
